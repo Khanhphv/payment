@@ -11,12 +11,15 @@ import payment_gateways.payment.model.Invoice;
 import payment_gateways.payment.repository.InvoiceRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 import org.apache.http.client.methods.HttpPost;
@@ -27,6 +30,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.entity.StringEntity;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 @Service("coinPaymentService")
 public class CoinPaymentService implements InvoiceInterface {
@@ -89,7 +93,7 @@ public class CoinPaymentService implements InvoiceInterface {
       SecretKeySpec secretKeySpec = new SecretKeySpec(apiSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
       mac.init(secretKeySpec);
       String hmac = bytesToHex(mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
-
+      logger.info("CoinPayment API request hmac: {}", hmac);
       logger.info("CoinPayment API request payload: {}", payload);
       HttpPost request = new HttpPost(apiUrl);
       request.setHeader("HMAC", hmac);
@@ -111,11 +115,14 @@ public class CoinPaymentService implements InvoiceInterface {
         logger.info("CoinPayment API response map: {}", responseMap);
         @SuppressWarnings("unchecked")
         Map<String, Object> result = (Map<String, Object>) responseMap.get("result");
+
+        String txid = (String) result.get("txid");
         data.setPaymentUrl((String) result.get("checkout_url"));
         data.setStatus(InvoiceStatus.CREATED);
         data.setPaymentMethod(PaymentMethod.COINPAYMENT);
         data.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC));
         data.setLogs(responseBody);
+        data.setInvoiceNumber(txid);
         invoiceRepository.save(data);
 
         Invoice invoice = new Invoice();
@@ -134,4 +141,65 @@ public class CoinPaymentService implements InvoiceInterface {
       throw new RuntimeException("Failed to create CoinPayment transaction: " + e.getMessage());
     }
   }
+
+  @Override
+  public void verifyInvoice(Map<String, String> bodyMap) {
+    String id = bodyMap.get("item_number");
+    String status = bodyMap.get("status");
+    if (status.equals("100") && id != null) {
+      Optional<Invoice> invoice = invoiceRepository.findByInvoiceNumber(id);
+      if (invoice.isPresent()) {
+        invoice.get().setStatus(InvoiceStatus.COMPLETED);
+        invoiceRepository.save(invoice.get());
+      }
+    }
+  }
+
+  public String getTransactionInfo(String txid) throws Exception {
+    Map<String, String> params = new LinkedHashMap<>();
+    params.put("version", "1");
+    params.put("cmd", "get_tx_info");
+    params.put("key", apiKey);
+    params.put("format", "json");
+    params.put("txid", txid);
+
+    String body = getFormUrlEncodedData(params);
+    String hmac = generateHmac(body, apiSecret);
+
+    HttpPost post = new HttpPost(apiUrl);
+    post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+    post.setHeader("HMAC", hmac);
+    post.setEntity(new StringEntity(body));
+
+    try (CloseableHttpClient client = HttpClients.createDefault();
+        CloseableHttpResponse response = client.execute(post)) {
+
+      return EntityUtils.toString(response.getEntity());
+    }
+  }
+
+  private String generateHmac(String data, String key) throws Exception {
+    SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
+    Mac mac = Mac.getInstance("HmacSHA512");
+    mac.init(secretKey);
+    byte[] hmacBytes = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+    StringBuilder sb = new StringBuilder();
+    for (byte b : hmacBytes) {
+      sb.append(String.format("%02x", b));
+    }
+    return sb.toString();
+  }
+
+  private String getFormUrlEncodedData(Map<String, String> params) {
+    StringBuilder result = new StringBuilder();
+    for (Map.Entry<String, String> entry : params.entrySet()) {
+      if (result.length() > 0)
+        result.append("&");
+      result.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8));
+      result.append("=");
+      result.append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+    }
+    return result.toString();
+  }
+
 }

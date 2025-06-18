@@ -89,4 +89,16 @@ public class NowPaymentService implements InvoiceInterface {
       throw new RuntimeException("Failed to create NowPayment invoice: " + e.getMessage());
     }
   }
+
+  @Override
+  public String getTransactionInfo(String id) throws Exception {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getTransactionInfo'");
+  }
+
+  @Override
+  public void verifyInvoice(Map<String, String> bodyMap) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'verifyInvoice'");
+  }
 }

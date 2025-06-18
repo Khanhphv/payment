@@ -12,16 +12,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import org.springframework.util.MultiValueMap;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
-import java.util.Enumeration;
 
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,41 +72,37 @@ public class InvoiceController {
   public ResponseEntity<String> handleCoinPaymentIPN(HttpServletRequest request,
       @RequestParam MultiValueMap<String, String> params,
       @RequestBody(required = false) String body) {
-    final String ipnSecret = "YOUR_COINPAYMENTS_IPN_SECRET"; // TODO: Replace with your actual secret
 
-    // // 1. Verify HMAC
-    // if (hmacHeader == null || !verifyHmac(ipnSecret, rawBody, hmacHeader)) {
-    // return ResponseEntity.status(403).body("Invalid HMAC signature");
-    // }
+    /**
+     * CoinPayment IPN body sample:
+     * Body sample:
+     * amount1=0.001&amount2=0.001&buyer_name=CoinPayments+API&currency1=LTC&currency2=LTC&email=vietkhanh1310%40gmail.com&
+     * fee=1.0E-5&ipn_id=f9af837618459442f1362f1693b155e2&ipn_mode=hmac&ipn_type=api&ipn_version=1.0&item_name=NowPayment+test+invoice&item_number=88e93b69-04a0-4c25-bab3-6570d6778de9&merchant=56fda0962d12bc5d076dfd93949bb343&net=0.00099&received_amount=0.001&received_confirms=3&status=100&status_text=Complete&txn_id=CPJF09SNB7FSZRECUGUZWPN5HP
+     */
 
-    logger.info("Method: {}", request.getMethod());
-    logger.info("URI: {}", request.getRequestURI());
-    logger.info("Query: {}", request.getQueryString());
-    logger.info("Body: {}", body);
-
-    Enumeration<String> headers = request.getHeaderNames();
-    while (headers.hasMoreElements()) {
-      String name = headers.nextElement();
-      logger.info("Header: {} = {}", name, request.getHeader(name));
+    // convert body to map
+    Map<String, String> bodyMap = new HashMap<>();
+    String[] bodyParts = body.split("&");
+    for (String part : bodyParts) {
+      String[] keyValue = part.split("=");
+      bodyMap.put(keyValue[0], keyValue[1]);
     }
+    logger.info("Body map: {}", bodyMap);
+
+    coinPaymentService.verifyInvoice(bodyMap);
 
     return ResponseEntity.ok("IPN received");
   }
 
-  private boolean verifyHmac(String secret, String body, String hmacHeader) {
+  @GetMapping("/coinpayment/transaction/{txid}")
+  public ResponseEntity<String> getTxInfo(@PathVariable String txid) {
     try {
-      Mac hmac = Mac.getInstance("HmacSHA512");
-      SecretKeySpec key = new SecretKeySpec(secret.getBytes(), "HmacSHA512");
-      hmac.init(key);
-      byte[] hash = hmac.doFinal(body.getBytes());
-      StringBuilder sb = new StringBuilder();
-      for (byte b : hash) {
-        sb.append(String.format("%02x", b & 0xff));
-      }
-      String calculatedHmac = sb.toString();
-      return calculatedHmac.equalsIgnoreCase(hmacHeader);
+      String result = coinPaymentService.getTransactionInfo(txid);
+      return ResponseEntity.ok(result);
     } catch (Exception e) {
-      return false;
+      logger.error("Error getting transaction info: {}", e.getStackTrace(), e);
+      return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+          .body("Error: " + e.getMessage());
     }
   }
 }
