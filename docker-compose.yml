@@ -28,6 +28,8 @@ services:
     ports:
       - "8080:8080"
     restart: on-failure
+    volumes:
+      - ./logs:/logs
 
   nginx:
     image: nginx:alpine
