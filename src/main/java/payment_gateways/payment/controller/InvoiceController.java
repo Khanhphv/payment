@@ -65,7 +65,7 @@ public class InvoiceController {
       @ApiResponse(responseCode = "403", description = "Invalid HMAC signature"),
       @ApiResponse(responseCode = "500", description = "Internal server error")
   })
-  @PostMapping("/../coinpayment/ipn")
+  @PostMapping("/api/coinpayment/ipn")
   public ResponseEntity<String> handleCoinPaymentIPN(
       @RequestParam MultiValueMap<String, String> params,
       @RequestHeader(value = "HMAC", required = false) String hmacHeader,
