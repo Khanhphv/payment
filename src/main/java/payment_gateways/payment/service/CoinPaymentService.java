@@ -76,7 +76,7 @@ public class CoinPaymentService implements InvoiceInterface {
       params.put("buyer_email", data.getEmail()); // You might want to add this to Invoice model
       params.put("item_name", data.getDescription());
       params.put("item_number", data.getInvoiceNumber());
-      params.put("ipn_url", ipnUrl);
+      params.put("ipn_url", java.net.URLEncoder.encode(ipnUrl, StandardCharsets.UTF_8));
       params.put("success_url", data.getSuccessUrl());
       params.put("cancel_url", data.getCancelUrl());
       params.put("want_shipping", "0");
