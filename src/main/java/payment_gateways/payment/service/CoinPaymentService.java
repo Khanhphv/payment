@@ -126,6 +126,7 @@ public class CoinPaymentService implements InvoiceInterface {
         invoice.setCurrency2(data.getCurrency2());
         invoice.setEmail(data.getEmail());
         invoice.setDescription(data.getDescription());
+        invoice.setPaymentUrl(data.getPaymentUrl());
         return invoice;
       }
     } catch (Exception e) {
