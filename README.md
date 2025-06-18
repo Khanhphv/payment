@@ -17,17 +17,30 @@ A Spring Boot application for handling payment gateway integrations.
 
 - JDK 21
 - Maven
-- MySQL
+- Docker & Docker Compose
 
 ## Getting Started
 
 1. Clone the repository
-2. Configure MySQL connection in `application.properties`
+2. Configure MySQL connection in `application.properties` (for local run)
 3. Run database migrations (auto-applied on app start via Liquibase)
 4. Run the application:
 ```bash
 ./mvnw spring-boot:run
 ```
+
+## Running with Docker Compose
+
+1. Build the application JAR:
+   ```bash
+   ./mvnw clean package -DskipTests
+   ```
+2. Build and start all services (Spring Boot app + MySQL):
+   ```bash
+   docker-compose up --build
+   ```
+3. The app will be available at [http://localhost:8080](http://localhost:8080)
+4. The MySQL database will be available at port 3308 on your host.
 
 ## Features
 
