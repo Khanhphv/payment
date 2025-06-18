@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import payment_gateways.payment.interfaces.InvoiceInterface;
 import payment_gateways.payment.model.Invoice;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,12 +20,17 @@ import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
+import java.util.Enumeration;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/invoices")
 @Tag(name = "Invoice", description = "Invoice management APIs")
 public class InvoiceController {
 
+  private static final Logger logger = LoggerFactory.getLogger(InvoiceController.class);
   private final InvoiceInterface nowPaymentService;
   private final InvoiceInterface coinPaymentService;
 
@@ -66,10 +72,9 @@ public class InvoiceController {
       @ApiResponse(responseCode = "500", description = "Internal server error")
   })
   @PostMapping("/coinpayment/ipn")
-  public ResponseEntity<String> handleCoinPaymentIPN(
+  public ResponseEntity<String> handleCoinPaymentIPN(HttpServletRequest request,
       @RequestParam MultiValueMap<String, String> params,
-      @RequestHeader(value = "HMAC", required = false) String hmacHeader,
-      @RequestBody(required = false) String rawBody) {
+      @RequestBody(required = false) String body) {
     final String ipnSecret = "YOUR_COINPAYMENTS_IPN_SECRET"; // TODO: Replace with your actual secret
 
     // // 1. Verify HMAC
@@ -77,18 +82,15 @@ public class InvoiceController {
     // return ResponseEntity.status(403).body("Invalid HMAC signature");
     // }
 
-    // 2. Process IPN data
-    String txnId = params.getFirst("txn_id");
-    String status = params.getFirst("status");
+    logger.info("Method: {}", request.getMethod());
+    logger.info("URI: {}", request.getRequestURI());
+    logger.info("Query: {}", request.getQueryString());
+    logger.info("Body: {}", body);
 
-    // Write log
-    String logLine = LocalDateTime.now() + " | txn_id=" + txnId + " | status=" + status + " | raw=" + rawBody + "\n";
-    try {
-      Files.createDirectories(Paths.get("/logs"));
-      Files.write(Paths.get("/logs/coinpayment-ipn.log"), logLine.getBytes(StandardCharsets.UTF_8),
-          StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-    } catch (Exception e) {
-      // Optionally handle logging error
+    Enumeration<String> headers = request.getHeaderNames();
+    while (headers.hasMoreElements()) {
+      String name = headers.nextElement();
+      logger.info("Header: {} = {}", name, request.getHeader(name));
     }
 
     return ResponseEntity.ok("IPN received");
