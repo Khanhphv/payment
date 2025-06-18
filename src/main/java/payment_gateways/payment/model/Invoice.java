@@ -2,22 +2,22 @@ package payment_gateways.payment.model;
 
 import lombok.Data;
 import jakarta.validation.constraints.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import payment_gateways.payment.contants.InvoiceStatus;
 import payment_gateways.payment.contants.PaymentMethod;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.index.Indexed;
 
 @Data
-@Document(collection = "invoices")
+@Entity
+@Table(name = "invoices")
 public class Invoice {
   @Id
-  private String id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-  @Indexed(unique = true)
+  @Column(unique = true)
   private String invoiceNumber;
 
   @NotNull(message = "Amount is required")
@@ -30,15 +30,17 @@ public class Invoice {
   @NotBlank(message = "Currency2 is required")
   private String currency2;
 
+  @Enumerated(EnumType.STRING)
   private PaymentMethod paymentMethod;
 
   private String paymentUrl;
 
   @Email(message = "Invalid email address")
   @NotBlank(message = "Email is required")
-  @Indexed
+  @Column
   private String email;
 
+  @Enumerated(EnumType.STRING)
   private InvoiceStatus status;
 
   private LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC);
@@ -56,8 +58,10 @@ public class Invoice {
     this.paymentMethod = paymentMethod;
   }
 
+  @Column(columnDefinition = "MEDIUMTEXT")
+  private String logs;
+
   public PaymentMethod getPaymentMethod() {
     return paymentMethod;
   }
-
 }

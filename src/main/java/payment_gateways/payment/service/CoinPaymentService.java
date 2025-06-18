@@ -1,5 +1,6 @@
 package payment_gateways.payment.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -7,7 +8,7 @@ import payment_gateways.payment.contants.InvoiceStatus;
 import payment_gateways.payment.contants.PaymentMethod;
 import payment_gateways.payment.interfaces.InvoiceInterface;
 import payment_gateways.payment.model.Invoice;
-
+import payment_gateways.payment.repository.InvoiceRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,8 @@ import org.apache.http.util.EntityUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.entity.StringEntity;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Service("coinPaymentService")
 public class CoinPaymentService implements InvoiceInterface {
@@ -40,6 +43,9 @@ public class CoinPaymentService implements InvoiceInterface {
 
   @Value("${coinpayment.ipn.url}")
   private String ipnUrl;
+
+  @Autowired
+  private InvoiceRepository invoiceRepository;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -59,6 +65,8 @@ public class CoinPaymentService implements InvoiceInterface {
 
       // Prepare request parameters
       Map<String, String> params = new HashMap<>();
+      String invoiceNumber = UUID.randomUUID().toString();
+      data.setInvoiceNumber(invoiceNumber);
       params.put("version", "1");
       params.put("key", apiKey);
       params.put("cmd", "create_transaction");
@@ -72,7 +80,7 @@ public class CoinPaymentService implements InvoiceInterface {
       params.put("success_url", data.getSuccessUrl());
       params.put("cancel_url", data.getCancelUrl());
       params.put("want_shipping", "0");
-      params.put("txn_id", UUID.randomUUID().toString());
+      params.put("txn_id", invoiceNumber);
 
       String payload = params.entrySet().stream()
           .map(entry -> entry.getKey() + "=" + entry.getValue())
@@ -106,8 +114,19 @@ public class CoinPaymentService implements InvoiceInterface {
         data.setPaymentUrl((String) result.get("checkout_url"));
         data.setStatus(InvoiceStatus.CREATED);
         data.setPaymentMethod(PaymentMethod.COINPAYMENT);
+        data.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC));
+        data.setLogs(responseBody);
+        invoiceRepository.save(data);
 
-        return data;
+        Invoice invoice = new Invoice();
+
+        invoice.setInvoiceNumber(data.getInvoiceNumber());
+        invoice.setAmount(data.getAmount());
+        invoice.setCurrency(data.getCurrency());
+        invoice.setCurrency2(data.getCurrency2());
+        invoice.setEmail(data.getEmail());
+        invoice.setDescription(data.getDescription());
+        return invoice;
       }
     } catch (Exception e) {
       logger.error("Failed to create CoinPayment transaction: {}", e.getMessage(), e);
