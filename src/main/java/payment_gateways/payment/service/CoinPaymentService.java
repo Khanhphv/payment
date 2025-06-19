@@ -52,6 +52,12 @@ public class CoinPaymentService implements InvoiceInterface {
   @Autowired
   private InvoiceRepository invoiceRepository;
 
+  @Autowired
+  private EmailService emailService;
+
+  @Autowired
+  private KeyService keyService;
+
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final CloseableHttpClient httpClient = HttpClients.createDefault();
 
@@ -159,9 +165,7 @@ public class CoinPaymentService implements InvoiceInterface {
         try {
           invoice.get().setStatus(InvoiceStatus.COMPLETED);
           invoiceRepository.save(invoice.get());
-          KeyService keyService = new KeyService();
           keyService.generateLicenseWithService(service);
-          EmailService emailService = new EmailService();
           emailService.sendSimpleEmail(email, "CoinPayment Transaction Completed",
               "Your CoinPayment transaction has been completed. Your license key is: "
                   + keyService.generateLicenseWithService(service));
