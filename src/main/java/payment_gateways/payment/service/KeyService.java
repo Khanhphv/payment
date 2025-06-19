@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
 
 @Service
 public class KeyService {
@@ -37,20 +36,7 @@ public class KeyService {
     }
   }
 
-  public static class LicenseResponse {
-    public List<String> keys;
-    public List<License> licenses;
-    public String message;
-    public boolean success;
-
-    public static class License {
-      public String key;
-      public String service;
-      public String version;
-    }
-  }
-
-  public LicenseResponse generateLicenseWithService(String service) {
+  public String generateLicenseWithService(String service) {
     String url = "http://193.41.237.5:8080/admin/licenses/generate-with-service";
     RestTemplate restTemplate = new RestTemplate();
     String token = loginToAdmin();
@@ -73,8 +59,7 @@ public class KeyService {
     ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
 
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      return mapper.readValue(response.getBody(), LicenseResponse.class);
+      return response.getBody();
     } catch (Exception e) {
       throw new RuntimeException("Failed to parse license response", e);
     }

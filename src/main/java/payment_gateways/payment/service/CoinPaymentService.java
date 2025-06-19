@@ -163,10 +163,10 @@ public class CoinPaymentService implements InvoiceInterface {
           invoice.get().setStatus(InvoiceStatus.COMPLETED);
           invoiceRepository.save(invoice.get());
           KeyService keyService = new KeyService();
-          keyService.generateLicenseWithService(service);
+          String licenseKey = keyService.generateLicenseWithService(service);
           emailService.sendSimpleEmail(email, "CoinPayment Transaction Completed",
-              "Your CoinPayment transaction has been completed. Your license key is: "
-                  + keyService.generateLicenseWithService(service));
+              "Your CoinPayment transaction has been completed. Your license key is: " + licenseKey);
+          logger.info("CoinPayment Transaction Completed: {}", licenseKey);
         } catch (Exception e) {
           logger.error("Failed to get transaction info: {}", e.getMessage(), e);
           invoice.get().setStatus(InvoiceStatus.FAILED);
