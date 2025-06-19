@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
@@ -116,7 +117,7 @@ public class CoinPaymentService implements InvoiceInterface {
         @SuppressWarnings("unchecked")
         Map<String, Object> result = (Map<String, Object>) responseMap.get("result");
 
-        String txid = (String) result.get("txid");
+        String txid = (String) result.get("txn_id");
         data.setPaymentUrl((String) result.get("checkout_url"));
         data.setStatus(InvoiceStatus.CREATED);
         data.setPaymentMethod(PaymentMethod.COINPAYMENT);
@@ -146,11 +147,14 @@ public class CoinPaymentService implements InvoiceInterface {
   public void verifyInvoice(Map<String, String> bodyMap) {
     String id = bodyMap.get("item_number");
     String status = bodyMap.get("status");
-    String email = bodyMap.get("email");
+    // email sample is vietkhanh1310%40gmail.com
+    // decode url
+    String emailValue = bodyMap.get("email");
+    String email = (emailValue != null) ? URLDecoder.decode(emailValue, StandardCharsets.UTF_8) : null;
     String service = bodyMap.get("item_name");
     if (status.equals("100") && id != null && email != null && service != null) {
       Optional<Invoice> invoice = invoiceRepository.findByInvoiceNumber(id);
-      if (invoice.isPresent()) {
+      if (invoice.isPresent() && invoice.get().getStatus() == InvoiceStatus.CREATED) {
 
         try {
           invoice.get().setStatus(InvoiceStatus.COMPLETED);
