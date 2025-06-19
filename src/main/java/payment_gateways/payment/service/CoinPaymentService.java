@@ -145,7 +145,7 @@ public class CoinPaymentService implements InvoiceInterface {
 
   @Override
   public void verifyInvoice(Map<String, String> bodyMap) {
-    String id = bodyMap.get("item_number");
+    String id = bodyMap.get("txn_id");
     String status = bodyMap.get("status");
     // email sample is vietkhanh1310%40gmail.com
     // decode url
