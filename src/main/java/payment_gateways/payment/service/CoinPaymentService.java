@@ -74,7 +74,7 @@ public class CoinPaymentService implements InvoiceInterface {
       params.put("version", "1");
       params.put("key", apiKey);
       params.put("cmd", "create_transaction");
-      params.put("amount", "0.012");
+      params.put("amount", "0.06");
       params.put("currency1", "LTC");
       params.put("currency2", "LTC");
       params.put("buyer_email", data.getEmail()); // You might want to add this to Invoice model
