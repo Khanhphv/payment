@@ -78,7 +78,7 @@ public class CoinPaymentService implements InvoiceInterface {
       params.put("currency1", data.getCurrency());
       params.put("currency2", data.getCurrency2());
       params.put("buyer_email", data.getEmail()); // You might want to add this to Invoice model
-      params.put("item_name", data.getDescription());
+      params.put("item_name", data.getService());
       params.put("item_number", data.getInvoiceNumber());
       params.put("ipn_url", java.net.URLEncoder.encode(ipnUrl, StandardCharsets.UTF_8));
       params.put("success_url", data.getSuccessUrl());
@@ -146,11 +146,26 @@ public class CoinPaymentService implements InvoiceInterface {
   public void verifyInvoice(Map<String, String> bodyMap) {
     String id = bodyMap.get("item_number");
     String status = bodyMap.get("status");
-    if (status.equals("100") && id != null) {
+    String email = bodyMap.get("email");
+    String service = bodyMap.get("item_name");
+    if (status.equals("100") && id != null && email != null && service != null) {
       Optional<Invoice> invoice = invoiceRepository.findByInvoiceNumber(id);
       if (invoice.isPresent()) {
-        invoice.get().setStatus(InvoiceStatus.COMPLETED);
-        invoiceRepository.save(invoice.get());
+
+        try {
+          invoice.get().setStatus(InvoiceStatus.COMPLETED);
+          invoiceRepository.save(invoice.get());
+          KeyService keyService = new KeyService();
+          keyService.generateLicenseWithService(service);
+          EmailService emailService = new EmailService();
+          emailService.sendSimpleEmail(email, "CoinPayment Transaction Completed",
+              "Your CoinPayment transaction has been completed. Your license key is: "
+                  + keyService.generateLicenseWithService(service));
+        } catch (Exception e) {
+          logger.error("Failed to get transaction info: {}", e.getMessage(), e);
+          invoice.get().setStatus(InvoiceStatus.FAILED);
+          invoiceRepository.save(invoice.get());
+        }
       }
     }
   }

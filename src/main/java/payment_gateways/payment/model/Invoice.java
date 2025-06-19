@@ -64,4 +64,8 @@ public class Invoice {
   public PaymentMethod getPaymentMethod() {
     return paymentMethod;
   }
+
+  @NotNull(message = "Service is required")
+  public String service;
+
 }
