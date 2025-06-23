@@ -213,6 +213,7 @@ public class Web3Service {
       case "matic":
         return polygonRpcUrl;
       case "bsc":
+      case "bnb_smart chain":
       case "binance":
         return bscRpcUrl;
       case "bsc-testnet":
