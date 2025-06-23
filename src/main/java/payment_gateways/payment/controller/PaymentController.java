@@ -1,58 +1,39 @@
 package payment_gateways.payment.controller;
 
-import payment_gateways.payment.model.Payment;
-import payment_gateways.payment.service.PaymentService;
+import payment_gateways.payment.model.ApiResponse;
+import payment_gateways.payment.model.License;
+import payment_gateways.payment.model.Web3PaymentRequest;
+import payment_gateways.payment.service.InvoiceService;
+import payment_gateways.payment.service.Web3Service;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
 
-  private final PaymentService paymentService;
+  private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
+
+  private final InvoiceService invoiceService;
 
   @Autowired
-  public PaymentController(PaymentService paymentService) {
-    this.paymentService = paymentService;
+  public PaymentController(InvoiceService invoiceService) {
+    this.invoiceService = invoiceService;
   }
 
-  @PostMapping
-  public ResponseEntity<Payment> createPayment(@RequestBody Payment payment) {
-    Payment createdPayment = paymentService.createPayment(payment);
-    return ResponseEntity.ok(createdPayment);
-  }
-
-  @GetMapping
-  public ResponseEntity<List<Payment>> getAllPayments() {
-    return ResponseEntity.ok(paymentService.getAllPayments());
-  }
-
-  @GetMapping("/{id}")
-  public ResponseEntity<Payment> getPaymentById(@PathVariable Long id) {
-    Payment payment = paymentService.getPaymentById(id);
-    if (payment != null) {
-      return ResponseEntity.ok(payment);
+  @PostMapping("/web3")
+  public ResponseEntity<ApiResponse<License>> createWeb3Payment(@RequestBody Web3PaymentRequest request) {
+    try {
+      License response = invoiceService.createLicenseKey(request);
+      return ResponseEntity.ok(ApiResponse.success(response));
+    } catch (Exception e) {
+      logger.error("Error creating web3 payment: {}", e.getMessage());
+      return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
     }
-    return ResponseEntity.notFound().build();
-  }
-
-  @PutMapping("/{id}")
-  public ResponseEntity<Payment> updatePayment(@PathVariable Long id, @RequestBody Payment payment) {
-    Payment updatedPayment = paymentService.updatePayment(id, payment);
-    if (updatedPayment != null) {
-      return ResponseEntity.ok(updatedPayment);
-    }
-    return ResponseEntity.notFound().build();
-  }
-
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
-    if (paymentService.deletePayment(id)) {
-      return ResponseEntity.ok().build();
-    }
-    return ResponseEntity.notFound().build();
   }
 }

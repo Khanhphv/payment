@@ -2,5 +2,6 @@ package payment_gateways.payment.contants;
 
 public enum PaymentMethod {
   COINPAYMENT,
-  NOWPAYMENT
+  NOWPAYMENT,
+  WEB3
 }
