@@ -19,7 +19,7 @@ public class Web3Service {
 
   private static final Logger logger = LoggerFactory.getLogger(Web3Service.class);
 
-  @Value("${web3.ethereum.rpc.url:https://mainnet.infura.io/v3/YOUR_PROJECT_ID}")
+  @Value("${web3.ethereum.rpc.url:https://mainnet.infura.io/v3/92a5e3b5b933401fbd327f40b668fe04")
   private String ethereumRpcUrl;
 
   @Value("${web3.polygon.rpc.url:https://polygon-rpc.com}")
@@ -222,6 +222,7 @@ public class Web3Service {
         return bscTestnetRpcUrl;
       case "ethereum":
       case "eth":
+      case "ethereum_mainnet":
       default:
         return ethereumRpcUrl;
     }
