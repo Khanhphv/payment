@@ -77,7 +77,7 @@ public class CryptoCloudService implements InvoiceInterface<CryptoClouldCreate> 
       return invoice;
     } catch (Exception e) {
       logger.error("{}", e.getStackTrace());
-      throw new RuntimeException(e);
+      throw new RuntimeException(e.getMessage());
     }
 
   }
