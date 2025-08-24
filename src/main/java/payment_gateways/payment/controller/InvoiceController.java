@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import payment_gateways.payment.dto.CryptoClouldCreate;
+import payment_gateways.payment.dto.CrytoNotify;
 import payment_gateways.payment.interfaces.InvoiceInterface;
 import payment_gateways.payment.model.Invoice;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +17,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.util.MultiValueMap;
 
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,15 +30,18 @@ import org.slf4j.LoggerFactory;
 public class InvoiceController {
 
   private static final Logger logger = LoggerFactory.getLogger(InvoiceController.class);
-  private final InvoiceInterface nowPaymentService;
-  private final InvoiceInterface coinPaymentService;
+  private final InvoiceInterface<Invoice> nowPaymentService;
+  private final InvoiceInterface<Invoice> coinPaymentService;
+  private final InvoiceInterface<CryptoClouldCreate> cryptocloudService;
 
   @Autowired
   public InvoiceController(
-      @Qualifier("nowPaymentService") InvoiceInterface nowPaymentService,
-      @Qualifier("coinPaymentService") InvoiceInterface coinPaymentService) {
+      @Qualifier("nowPaymentService") InvoiceInterface<Invoice> nowPaymentService,
+      @Qualifier("coinPaymentService") InvoiceInterface<Invoice> coinPaymentService,
+      @Qualifier("cryptocloudService") InvoiceInterface<CryptoClouldCreate> cryptocloudService) {
     this.nowPaymentService = nowPaymentService;
     this.coinPaymentService = coinPaymentService;
+    this.cryptocloudService = cryptocloudService;
   }
 
   @Operation(summary = "Create NowPayment invoice", description = "Creates a new invoice using NowPayment service")
@@ -104,5 +109,23 @@ public class InvoiceController {
       return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
           .body("Error: " + e.getMessage());
     }
+  }
+
+  @PostMapping("/cryptocloud")
+  public ResponseEntity<Invoice> createCryptoCloudInvoice(@Valid @RequestBody CryptoClouldCreate invoice) {
+    return ResponseEntity.ok(cryptocloudService.createInvoice(invoice));
+  }
+
+  @GetMapping("/cryptocloud/notify")
+  public ResponseEntity<String> notify(@RequestBody CrytoNotify notify) {
+    logger.info("Notify: {}", notify);
+    Map<String, String> bodyMap = new HashMap<>();
+    bodyMap.put("invoice_id", notify.getInvoice_id());
+    bodyMap.put("status", notify.getStatus());
+    bodyMap.put("currency", notify.getCurrency());
+    bodyMap.put("order_id", notify.getOrder_id());
+    bodyMap.put("token", notify.getToken());
+    cryptocloudService.verifyInvoice(bodyMap);
+    return ResponseEntity.ok("OK");
   }
 }

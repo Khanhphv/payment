@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service("nowPaymentService")
-public class NowPaymentService implements InvoiceInterface {
+public class NowPaymentService implements InvoiceInterface<Invoice> {
   private static final Logger logger = LoggerFactory.getLogger(NowPaymentService.class);
 
   @Value("${nowpayment.api.key}")

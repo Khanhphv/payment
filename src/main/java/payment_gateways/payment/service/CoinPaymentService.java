@@ -34,7 +34,7 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 
 @Service("coinPaymentService")
-public class CoinPaymentService implements InvoiceInterface {
+public class CoinPaymentService implements InvoiceInterface<Invoice> {
   private static final Logger logger = LoggerFactory.getLogger(CoinPaymentService.class);
 
   @Value("${coinpayment.api.key}")

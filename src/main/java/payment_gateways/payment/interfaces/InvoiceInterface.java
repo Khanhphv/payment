@@ -3,9 +3,9 @@ package payment_gateways.payment.interfaces;
 import payment_gateways.payment.model.Invoice;
 import java.util.Map;
 
-public interface InvoiceInterface {
+public interface InvoiceInterface<P> {
 
-  Invoice createInvoice(Invoice invoice);
+  Invoice createInvoice(P payload);
 
   String getTransactionInfo(String id) throws Exception;
 

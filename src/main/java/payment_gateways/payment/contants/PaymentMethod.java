@@ -3,5 +3,6 @@ package payment_gateways.payment.contants;
 public enum PaymentMethod {
   COINPAYMENT,
   NOWPAYMENT,
-  WEB3
+  WEB3,
+  CRYPTOCLOUD
 }

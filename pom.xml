@@ -115,6 +115,19 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-maven-plugin</artifactId>
+				<version>4.23.0</version>
+				<configuration>
+					<propertyFile>src/main/resources/application.properties</propertyFile>
+					<changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
+					<url>jdbc:mysql://localhost:3306/payment_db?createDatabaseIfNotExist=true</url>
+					<username>root</username>
+					<password>root</password>
+					<driver>com.mysql.cj.jdbc.Driver</driver>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
