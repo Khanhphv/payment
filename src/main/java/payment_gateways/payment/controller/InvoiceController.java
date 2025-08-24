@@ -116,7 +116,7 @@ public class InvoiceController {
     return ResponseEntity.ok(cryptocloudService.createInvoice(invoice));
   }
 
-  @GetMapping("/cryptocloud/notify")
+  @PostMapping("/cryptocloud/notify")
   public ResponseEntity<String> notify(@RequestBody CrytoNotify notify) {
     logger.info("Notify: {}", notify);
     Map<String, String> bodyMap = new HashMap<>();
