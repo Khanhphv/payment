@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Notification</title>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    "
+  >
+    <div
+      style="
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <!-- Header -->
+      <div
+        style="
+          background: #007bff;
+          color: white;
+          padding: 30px;
+          text-align: center;
+        "
+      >
+        <h1 style="margin: 0; font-size: 24px">Payment Gateway</h1>
+      </div>
+
+      <!-- Content -->
+      <div style="padding: 30px">
+        <h2 style="color: #333">Invoice Created Successfully</h2>
+        <p style="color: #666; margin-bottom: 25px">
+          Your invoice has been created and is ready for payment.
+        </p>
+
+        <!-- Invoice Details -->
+        <div
+          style="
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 10px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 8px;
+            "
+          >
+            <span style="font-weight: bold">Invoice Number:</span>
+            <span>{{invoiceNumber}}</span>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 10px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 8px;
+            "
+          >
+            <span style="font-weight: bold">Amount:</span>
+            <span style="font-size: 18px; font-weight: bold; color: #2c3e50"
+              >{{amount}} {{currency}}</span
+            >
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 10px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 8px;
+            "
+          >
+            <span style="font-weight: bold">Payment Method:</span>
+            <span>{{paymentMethod}}</span>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 10px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 8px;
+            "
+          >
+            <span style="font-weight: bold">Status:</span>
+            <span
+              style="
+                background: #e3f2fd;
+                color: #1976d2;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: bold;
+              "
+              >{{status}}</span
+            >
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 10px;
+            "
+          >
+            <span style="font-weight: bold">Created:</span>
+            <span>{{createdDate}}</span>
+          </div>
+          {{descriptionSection}}
+        </div>
+
+        <!-- Action Button -->
+        <a
+          href="https://discord.gg/eFzpZeVH"
+          style="
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+          "
+          >Pay Now</a
+        >
+      </div>
+
+      <!-- Footer -->
+    </div>
+  </body>
+</html>
