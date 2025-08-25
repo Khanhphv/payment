@@ -96,7 +96,7 @@ public class CryptoCloudService implements InvoiceInterface<CryptoClouldCreate> 
         Optional<Invoice> invoice = invoiceRepository.findByInvoiceNumber(invoiceId);
         if (invoice.isPresent()) {
           invoice.get().setStatus(InvoiceStatus.COMPLETED);
-          emailService.sendSimpleEmail(invoice.get().getEmail(), "Payment successful", "Payment successful");
+          emailService.sendInvoiceEmail(invoice.get());
           invoiceRepository.save(invoice.get());
         }
       }
