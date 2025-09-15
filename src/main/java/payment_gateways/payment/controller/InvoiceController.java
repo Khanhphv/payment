@@ -125,7 +125,7 @@ public class InvoiceController {
       @RequestBody(required = false) String body,
       HttpServletRequest request) {
 
-    logger.info("CryptoCloud notify received - Content-Type: {}", request.getContentType());
+    logger.info("CryptoCloud notify received - Content-Type: {}", request.getParameterMap());
 
     Map<String, String> bodyMap = new HashMap<>();
 

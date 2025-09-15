@@ -13,4 +13,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
   List<Invoice> findByEmail(String email);
 
   List<Invoice> findByStatus(payment_gateways.payment.contants.InvoiceStatus status);
+
+  Optional<Invoice> findByPaymentUrl(String paymentUrl);
+
 }

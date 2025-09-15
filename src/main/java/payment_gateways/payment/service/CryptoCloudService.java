@@ -88,12 +88,13 @@ public class CryptoCloudService implements InvoiceInterface<CryptoClouldCreate> 
 
   public void verifyInvoice(Map<String, String> bodyMap) {
     try {
-
       logger.info("Verify invoice: {}", bodyMap);
+      String prefixUrl = "https://pay.cryptocloud.plus/";
       String invoiceId = bodyMap.get("invoice_id");
+      String paymentUrl = prefixUrl + invoiceId;
       String status = bodyMap.get("status");
       if (status.equals("success")) {
-        Optional<Invoice> invoice = invoiceRepository.findByInvoiceNumber(invoiceId);
+        Optional<Invoice> invoice = invoiceRepository.findByPaymentUrl(paymentUrl);
         if (invoice.isPresent()) {
           invoice.get().setStatus(InvoiceStatus.COMPLETED);
           emailService.sendInvoiceEmail(invoice.get());
