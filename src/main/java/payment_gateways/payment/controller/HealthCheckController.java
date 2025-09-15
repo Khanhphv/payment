@@ -55,11 +55,9 @@ public class HealthCheckController {
 
   @GetMapping("/resend-email")
   public ResponseEntity<String> resetEmail(@RequestParam String to, @RequestParam String invoiceNumber) {
-    Invoice invoice = invoiceRepository.findByInvoiceNumber(invoiceNumber).get();
     Map<String, String> bodyMap = new HashMap<>();
-    bodyMap.put("invoice_id", invoice.getInvoiceNumber());
+    bodyMap.put("invoice_id", invoiceNumber);
     bodyMap.put("status", "success");
-    bodyMap.put("currency", invoice.getCurrency());
     cryptoCloudService.verifyInvoice(bodyMap);
     return ResponseEntity.ok("Email resend to " + to);
   }
