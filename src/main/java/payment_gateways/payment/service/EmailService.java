@@ -35,7 +35,7 @@ public class EmailService {
   }
 
   public void sendInvoiceEmail(Invoice invoice) throws MessagingException, IOException {
-    String subject = "Invoice Created - " + invoice.getInvoiceNumber();
+    String subject = "[VSHARP] Invoice Created";
     String htmlContent = buildInvoiceEmailTemplate(invoice);
     sendHtmlEmail(invoice.getEmail(), subject, htmlContent, CC_ADDRESS);
   }
